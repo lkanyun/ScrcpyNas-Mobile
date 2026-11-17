@@ -1,0 +1,18 @@
+ScrcpyNas · Mobile Remote — derivative source preparation
+
+Based on ScrcpyNas by zgcwkj:
+https://github.com/zgcwkjOpenProject/ScrcpyNas
+Copyright 2026 zgcwkj. Original Apache-2.0 LICENSE retained unchanged.
+
+This derivative adds mobile browser interfaces, WebRTC transport, Opus audio,
+adaptive quality, session persistence, sharing, and recovery improvements.
+Modified files are identified in MODIFICATIONS.md and source notices where
+applicable. No endorsement by the original project is implied.
+
+ws-scrcpy is separately licensed under MIT:
+Copyright (C) 2021 by Netris, JSC.
+Its author metadata credits Sergey Volkov. See common/engine/LICENSE.
+
+Other third-party rights and publication exclusions are described in
+THIRD_PARTY_NOTICES.md. This NOTICE is a derivative attribution document,
+not a replacement for any original third-party notice or license.

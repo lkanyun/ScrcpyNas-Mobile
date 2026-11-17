@@ -1,0 +1,281 @@
+/* Modified in the Mobile Remote derivative (2026): mobile UI, media transport or recovery changes; see MODIFICATIONS.md. */
+:root {
+  --phone-safe-top: env(safe-area-inset-top, 0px);
+  --phone-safe-right: env(safe-area-inset-right, 0px);
+  --phone-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --phone-safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* 设备主页保留原布局，在独立窗口下避开刘海与底部手势区域 */
+body:not(.stream) .app-shell {
+  height: 100dvh;
+  box-sizing: border-box;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+body:not(.stream) .app-shell > .sidebar { height: 100%; }
+body:not(.stream) .app-shell > .stage { height: 100%; }
+
+/* 只锁移动端管理页根滚动，列表与对话框继续使用自身滚动容器 */
+@media (pointer: coarse) {
+  html:has(.app-shell) { overflow: hidden; overscroll-behavior: none; }
+  body:has(.app-shell) { position: fixed; inset: 0; height: 100dvh; overflow: hidden; overscroll-behavior: none; }
+}
+
+/* 内嵌和独立投屏都隔离滚动链，不能只在沉浸模式处理 */
+html:has(body.stream), body.stream { overscroll-behavior: none; }
+body.stream .video { touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none; }
+
+/* 不支持页面全屏的浏览器使用动态视口，系统地址栏仍由浏览器管理 */
+body.stream.mobile-immersive {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  overscroll-behavior: none;
+}
+body.stream .video { overflow: hidden; }
+body.stream .touch-layer { touch-action: none; }
+
+/* 内嵌沉浸模式展开外层 viewer，而不是只扩大 iframe 内部的 body */
+body.phone-immersive .stage-head,
+body.phone-immersive .sidebar,
+body.phone-immersive .sidebar-backdrop { display: none !important; }
+body.phone-immersive .app-shell { padding: 0 !important; height: 100dvh !important; }
+body.phone-immersive .stage { padding: 0 !important; gap: 0 !important; height: 100% !important; }
+body.phone-immersive { background: #05070b; }
+body.phone-immersive .viewer {
+  position: fixed !important;
+  inset: 0 !important;
+  top: var(--phone-safe-top) !important;
+  left: var(--phone-safe-left) !important;
+  width: calc(100vw - var(--phone-safe-left) - var(--phone-safe-right)) !important;
+  height: calc(100dvh - var(--phone-safe-top) - var(--phone-safe-bottom)) !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  z-index: 1000;
+}
+
+/* 控制层透明区域不截获设备触摸 */
+#mobile-controls {
+  position: fixed;
+  inset: 0;
+  width: var(--stream-width, 100vw);
+  height: var(--stream-height, 100dvh);
+  box-sizing: border-box;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  pointer-events: none;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #f2f4f7;
+}
+
+/* 可见圆点与触摸热区分离 */
+#mobile-orb {
+  position: absolute;
+  right: max(8px, env(safe-area-inset-right));
+  top: max(35%, env(safe-area-inset-top));
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+#mobile-orb span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e1e5ebe0;
+  font: 500 10px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.2px;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 1px solid #ffffff80;
+  background: #b8c1ce66;
+  box-shadow: inset 0 0 0 7px #14192355, 0 2px 8px #0006;
+}
+
+#mobile-menu {
+  position: absolute;
+  right: max(12px, env(safe-area-inset-right));
+  top: max(42%, env(safe-area-inset-top));
+  width: 192px;
+  padding: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  background: #1c222bf5;
+  border: 1px solid #ffffff30;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px #0007;
+  pointer-events: auto;
+}
+
+#mobile-orb.is-dim span { opacity: 0.28; }
+@media (prefers-reduced-motion: reduce) {
+  #mobile-orb span { transition: none; }
+}
+#mobile-menu[hidden] { display: none; }
+#mobile-menu button {
+  min-height: 44px;
+  flex: 1 0 30%;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+#mobile-menu button:active { background: #ffffff25; }
+#mobile-controls button:focus-visible { outline: 2px solid #a9d9ff; outline-offset: -2px; }
+#mobile-status { width: 100%; margin: 0; font-size: 12px; text-align: center; }
+#mobile-status:not(:empty) { padding: 6px; }
+
+/* 设置弹窗位于安全区域中心 内容独立滚动 底部关闭始终可达 */
+#media-backdrop, #mobile-menu-backdrop { position: fixed; inset: 0; background: #0007; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); touch-action: none; pointer-events: auto; }
+#media-backdrop { z-index: 2147483647; }
+#media-backdrop[hidden], #mobile-menu-backdrop[hidden] { display: none; }
+#media-panel {
+  position: fixed; z-index: 2147483647;
+  top: calc(50% + (env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) / 2);
+  left: 50%; transform: translate(-50%, -50%);
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(760px, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 32px));
+  box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column;
+  border: 1px solid #ffffff20; border-radius: 28px; background: #1c1c1ef5; color: #f5f5f7;
+  box-shadow: 0 24px 80px #0008; font: 15px -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-backdrop-filter: blur(28px); backdrop-filter: blur(28px);
+}
+#media-panel[hidden] { display: none; }
+#media-panel header { flex: none; padding: 22px 22px 16px; text-align: center; }
+#media-panel h2 { margin: 5px 0 0; font-size: 23px; letter-spacing: -.6px; font-weight: 650; }
+#media-panel .settings-eyebrow { font-size: 11px; color: #a1a1a6; letter-spacing: 2px; }
+#media-content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 18px 16px; display: flex; flex-direction: column; gap: 22px; }
+#media-panel .settings-heading { display: flex; justify-content: space-between; align-items: center; margin: 0 4px 10px; gap: 8px; }
+#media-panel h3 { margin: 0; font-size: 14px; font-weight: 600; }
+#media-panel .settings-heading span { font-size: 11px; color: #98989f; }
+#media-panel .settings-card { border-radius: 18px; background: #2c2c2e; padding: 0 14px; }
+#media-panel .settings-card > label, #media-panel .settings-switch-row { min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#media-panel .settings-card > label + label, #media-screen-controls { border-top: 1px solid #ffffff12; }
+#media-panel button, #media-panel select { font: inherit; color: inherit; box-sizing: border-box; cursor: pointer; }
+#media-panel select { -webkit-appearance: none; appearance: none; color-scheme: dark; padding: 0 16px 0 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2398989f' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right center; min-height: 44px; max-width: 52%; border: 0; background-color: transparent; color: #64a9ff; text-align: right; font-size: 15px; }
+#media-panel select option { background: #2c2c2e; }
+#media-panel p { margin: 0; font-size: 12px; line-height: 1.6; color: #98989f; overflow-wrap: anywhere; }
+#media-panel .settings-note { padding: 9px 4px 0; }
+#media-panel #media-feedback:not(:empty) { padding: 8px 4px 0; color: #64a9ff; }
+#media-panel #media-apply { width: 100%; min-height: 46px; border: 0; border-radius: 14px; margin-top: 0; background: #0a84ff; font-weight: 600; }
+#media-panel footer { display: flex; flex-direction: column; gap: 10px; padding: 12px 18px 16px; border-top: 1px solid #ffffff12; flex: none; }
+#media-panel #media-close { width: 100%; min-height: 48px; border: 0; border-radius: 16px; background: #3a3a3c; color: #fff; font-weight: 600; }
+#media-panel button:active { filter: brightness(.85); }
+#media-panel :focus-visible { outline: 2px solid #64a9ff; outline-offset: 3px; }
+#media-panel .audio-settings-controls { padding-bottom: 12px; }
+#media-panel .audio-volume-label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px; font-size: 13px; padding-top: 4px; }
+#phone-audio-volume-value { color: #64a9ff; font-variant-numeric: tabular-nums; font-weight: 600; }
+#media-panel #phone-audio-volume { width: 100%; min-width: 0; margin: 0; height: 44px; padding: 0; -webkit-appearance: none; appearance: none; background: transparent; touch-action: pan-y; }
+#phone-audio-volume::-webkit-slider-runnable-track { height: 5px; border-radius: 5px; background: linear-gradient(to right, #0a84ff var(--volume-fill, 33.33%), #48484a var(--volume-fill, 33.33%)); }
+#phone-audio-volume::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10.5px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px #0005; }
+#phone-audio-volume::-moz-range-track { height: 5px; border-radius: 5px; background: #48484a; }
+#phone-audio-volume::-moz-range-progress { height: 5px; background: #0a84ff; }
+#phone-audio-volume::-moz-range-thumb { height: 26px; width: 26px; border: 0; border-radius: 50%; background: white; }
+#media-panel .audio-volume-scale { position: relative; display: flex; justify-content: space-between; color: #98989f; font-size: 10px; margin-top: -4px; }
+#media-panel .audio-volume-presets { display: flex; gap: 8px; margin-top: 10px; }
+#media-panel .audio-volume-presets button { flex: 1; min-height: 36px; border: 0; border-radius: 10px; background: #3a3a3c; color: #d1d1d6; font-size: 12px; }
+#media-panel .audio-volume-presets button[aria-pressed=true] { background: #0a84ff26; color: #64a9ff; }
+/* 开关保留真实语义 控件触摸区适配手指操作 */
+#media-panel .ios-switch { -webkit-appearance: none; appearance: none; flex: none; width: 51px; height: 32px; min-height: 32px; margin: 0; padding: 0; border: 0; border-radius: 20px; color: transparent; font-size: 0; background: #48484a radial-gradient(circle, #fff 12px, transparent 13px) 2px center / 28px 28px no-repeat; transition: background-color 140ms ease, background-position 140ms ease; }
+#media-panel .ios-switch[aria-checked=true], #media-panel .ios-switch:checked { background-color: #30d158; background-position: calc(100% - 2px) center; }
+#media-diagnostics { color: #98989f; font-size: 12px; }
+#media-diagnostics summary { padding: 4px; cursor: pointer; }
+#media-diagnostics p, #media-diagnostics section { margin-top: 8px; }
+/* 控制菜单同样居中 底部提供显式关闭 */
+#mobile-menu { position: absolute; width: min(340px, calc(100vw - 32px)); box-sizing: border-box; max-height: calc(100dvh - 32px); overflow-y: auto; padding: 16px; gap: 8px; border-radius: 26px; background: #1c1c1ef5; }
+#mobile-menu button { flex-basis: 42%; min-height: 48px; border-radius: 13px; background: #ffffff0c; }
+#mobile-menu #mobile-menu-close { flex-basis: 100%; order: 999; background: #3a3a3c; font-size: 15px; font-weight: 600; }
+#mobile-menu #mobile-status { order: 99; }
+/* 主页弹窗沿用同一居中卡片与底部关闭布局 */
+.phone-modal-footer { display: none; }
+@media (max-width: 600px), (pointer: coarse) {
+  .modal { padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); align-items: center !important; }
+  .modal .modal-card { border-radius: 26px; max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 32px); min-height: 0 !important; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  .modal-head [data-close-modal] { display: none; }
+  .phone-modal-footer { display: flex; flex: none; padding-top: 12px; border-top: 1px solid var(--border); }
+  .phone-modal-footer button { width: 100%; min-height: 48px; border-radius: 14px; font-weight: 600; }
+}
+@media (prefers-reduced-motion: reduce) { #media-panel .ios-switch { transition: none; } }
+
+/* 原声刻度对应增益范围中的实际位置 */
+
+/* 首页直接展示设备 卡片入口与投屏舞台按真实加载状态切换 */
+.home-intro, .device-illustration, .device-caption, .device-enter { display: none; }
+.home-tools { position: relative; }
+.home-tools > summary { list-style: none; cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 0 18px; border: 1px solid var(--border); border-radius: 14px; }
+.home-tools > summary::-webkit-details-marker { display: none; }
+.home-tools-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 30; width: 170px; padding: 8px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 4px; }
+.home-tools-menu .btn { min-height: 44px; border: 0; }
+body.device-home .app-shell { display: flex; justify-content: center; padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
+body.device-home .app-shell > .sidebar { position: relative; inset: auto; transform: none; visibility: visible; width: 100%; max-width: 760px; flex: 1; padding: 0; border: 0; background: transparent; box-shadow: none; overflow-y: auto; gap: 22px; }
+body.device-home .stage, body.device-home .sidebar-backdrop, body.device-home .sidebar-close-row { display: none !important; }
+body.device-home .brand { padding: 0; }
+body.device-home .brand h1 { font-size: 15px; font-weight: 600; }
+body.device-home .logo { border-radius: 13px; width: 38px; height: 38px; font-size: 18px; background: #0a84ff18; color: #0a84ff; }
+body.device-home .home-intro { display: block; margin-top: 12px; }
+body.device-home .home-intro h2 { font-size: 32px; font-weight: 700; letter-spacing: -1px; }
+body.device-home .home-intro p { margin-top: 8px; font-size: 14px; color: var(--muted); }
+body.device-home .side-actions { gap: 10px; }
+body.device-home .side-actions > .btn { min-height: 46px; border-radius: 14px; background: #0a84ff; color: #fff; border: 0; font-weight: 600; }
+body.device-home .side-head h2 { font-size: 13px; color: var(--muted); font-weight: 500; }
+body.device-home .devices { overflow: visible; flex: none; }
+body.device-home .device-group-list { display: flex; flex-direction: row; flex-wrap: wrap; gap: 14px; }
+body.device-home .device-wrap { position: relative; flex: 1 1 300px; min-width: 0; border-radius: 24px; background: var(--surface); border: 1px solid var(--border); padding: 0; overflow: hidden; box-shadow: 0 4px 20px #00000004; }
+body.device-home .device-wrap .device { display: flex; align-items: center; gap: 14px; min-height: 146px; width: 100%; border: 0; background: transparent; padding: 24px 20px; text-align: left; border-radius: 24px; box-shadow: none; color: var(--text); }
+body.device-home .device-illustration { display: flex; align-items: center; justify-content: center; flex: none; width: 58px; height: 74px; border-radius: 18px; background: #0a84ff10; color: #0a84ff; font-size: 52px; }
+body.device-home .device-dot { position: absolute; top: 20px; right: 20px; }
+body.device-home .device-text { flex: 1; gap: 8px; }
+body.device-home .device-model { font-size: 17px; font-weight: 650; overflow-wrap: anywhere; }
+body.device-home .device-caption { display: block; font-size: 12px; color: var(--muted); }
+body.device-home .device-address { display: none; }
+body.device-home .device-enter { display: flex; align-items: center; gap: 6px; flex: none; color: #0a84ff; font-size: 13px; }
+body.device-home .record-actions { position: absolute; top: auto; right: 8px; bottom: 0; transform: none; }
+body.device-home .delete-record { width: 44px; height: 44px; opacity: .45; }
+body.device-home #device-home-feedback { color: var(--muted); font-size: 13px; }
+body.device-home .empty { padding: 36px 20px; background: var(--surface); border-radius: 22px; text-align: center; line-height: 1.7; }
+
+/* 设置使用分段导航 常用操作一屏可达 技术详情不占用日常空间 */
+#media-panel header { padding: 18px 20px 12px; }
+#media-panel .settings-eyebrow { display: none; }
+#media-panel h2 { margin: 0; font-size: 21px; }
+#media-panel .settings-tabs { display: flex; flex: none; margin: 0 18px 18px; padding: 3px; border-radius: 12px; background: #0003; gap: 3px; }
+#media-panel .settings-tabs button { flex: 1; min-height: 36px; border: 0; border-radius: 9px; background: transparent; color: #a1a1a6; font-size: 14px; font-weight: 600; }
+#media-panel .settings-tabs button[aria-selected=true] { background: #48484a; color: #fff; box-shadow: 0 2px 6px #0003; }
+#media-panel .settings-page[hidden], #media-panel #media-manual-fields[hidden], #media-panel #media-apply[hidden] { display: none !important; }
+#media-content { gap: 0; padding-bottom: 12px; }
+#media-manual-fields > label { min-height: 50px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid #ffffff12; }
+#media-panel footer { flex-direction: row; padding-top: 12px; }
+#media-panel footer button { flex: 1; }
+#media-panel #media-apply, #media-panel #media-close { min-height: 46px; border-radius: 14px; }
+#media-panel .settings-heading { margin-bottom: 8px; }
+#media-panel #media-quality-status { margin-top: 14px; padding: 14px; border-radius: 16px; background: #0a84ff12; color: #b6d7ff; font-size: 13px; }
+#media-panel #phone-audio-route-repair { margin-top: 14px; min-height: 44px; border: 0; border-radius: 12px; background: #3a3a3c; padding: 10px 14px; }
+@media (max-width: 370px) {
+  body.device-home .device-wrap .device { padding: 22px 16px; gap: 10px; }
+  body.device-home .device-illustration { width: 46px; }
+  body.device-home .device-enter { font-size: 0; }
+  body.device-home .device-enter i { font-size: 18px; }
+}
+
+/* 快捷菜单固定两行三列，点击遮罩收起 */
+#mobile-menu button { box-sizing: border-box; flex: 0 0 calc(33.333% - 6px); width: calc(33.333% - 6px); min-width: 0; max-width: calc(33.333% - 6px); margin: 0; padding: 8px 2px; white-space: nowrap; }
+#mobile-menu button[hidden], #mobile-status:empty { display: none; }
+#media-diagnostics > button[data-mobile-action] { min-height: 44px; margin: 12px 8px 0 0; padding: 10px 14px; border: 0; border-radius: 12px; background: #3a3a3c; }

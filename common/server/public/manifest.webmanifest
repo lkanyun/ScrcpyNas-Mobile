@@ -1,0 +1,14 @@
+{
+  "id": "/",
+  "name": "ScrcpyNas",
+  "short_name": "ScrcpyNas",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#05070b",
+  "theme_color": "#05070b",
+  "icons": [
+    { "src": "mobile-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
